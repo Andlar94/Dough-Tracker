@@ -121,6 +121,8 @@ void MyWebServer::handleStatus() {
   json += dataManager->getCount();
   json += ",\"initialThickness\":";
   json += calibManager->getInitialDoughThickness();
+  json += ",\"calibrationTime\":";
+  json += calibManager->getCalibrationTime();
   json += "}";
   
   server->send(200, "application/json", json);

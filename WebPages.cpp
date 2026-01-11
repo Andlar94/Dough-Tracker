@@ -460,6 +460,7 @@ String WebPages::getInlineJavaScript() {
   return R"rawliteral(
 let chart = null;
 let autoRefreshInterval = null;
+let calibrationTime = 0;  // Store calibration timestamp globally
 
 // Toggle section visibility
 function toggleSection(contentId) {
@@ -560,14 +561,7 @@ function updateUI(data) {
     document.getElementById('risePercentage').textContent = latest.rise.toFixed(1) + '%';
     document.getElementById('thickness').textContent = latest.thickness + ' mm';
     
-    // Calculate elapsed time using Unix timestamps
-    const firstTime = data.measurements[0].timestamp * 1000;  // Convert to milliseconds
-    const lastTime = latest.timestamp * 1000;  // Convert to milliseconds
-    const elapsedSeconds = Math.floor((lastTime - firstTime) / 1000);
-    const hours = Math.floor(elapsedSeconds / 3600);
-    const minutes = Math.floor((elapsedSeconds % 3600) / 60);
-    document.getElementById('elapsedTime').textContent = hours + ':' + String(minutes).padStart(2, '0');
-    
+    // Elapsed time will be updated in updateCalibrationStatus with calibration timestamp
     // Update chart
     updateChart(data.measurements);
     
@@ -593,18 +587,18 @@ function formatTime24h(timestamp) {
 function updateChart(measurements) {
     if (!chart) return;
     
-    // Calculate elapsed time for each measurement
-    const firstTimestamp = measurements[0].timestamp;
+    // Calculate elapsed time for each measurement from calibration time
+    const baselineTime = calibrationTime > 0 ? calibrationTime : measurements[0].timestamp;
     chart.data.labels = measurements.map(m => {
         // Get clock time
         const timeStr = formatTime24h(m.timestamp);
         
-        // Calculate elapsed time
-        const elapsedSeconds = Math.floor((m.timestamp - firstTimestamp));
+        // Calculate elapsed time from baseline (calibration time or first measurement)
+        const elapsedSeconds = Math.floor((m.timestamp - baselineTime));
         const hours = Math.floor(elapsedSeconds / 3600);
         const minutes = Math.floor((elapsedSeconds % 3600) / 60);
         
-        // Format as "HH:MM (Elapsed: H:MM)" (e.g., "10:15 (Elapsed: 0:05)")
+        // Format as "HH:MM (Elapsed: H:MM)" (e.g., "10:15 (Elapsed: 15:00)")
         return timeStr + '\n(Elapsed: ' + hours + ':' + String(minutes).padStart(2, '0') + ')';
     });
     
@@ -660,6 +654,21 @@ function updateCalibrationStatus(status) {
     const initialThicknessElement = document.getElementById('initialThickness');
     if (initialThicknessElement) {
         initialThicknessElement.textContent = status.initialThickness + ' mm';
+    }
+    
+    // Calculate and update elapsed time from calibration time
+    if (status.calibrationTime && status.calibrationTime > 0) {
+        const calibrationTimeSeconds = status.calibrationTime;
+        const now = Math.floor(Date.now() / 1000);
+        const elapsedSeconds = now - calibrationTimeSeconds;
+        
+        const hours = Math.floor(elapsedSeconds / 3600);
+        const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+        
+        const elapsedTimeElement = document.getElementById('elapsedTime');
+        if (elapsedTimeElement) {
+            elapsedTimeElement.textContent = hours + ':' + String(minutes).padStart(2, '0');
+        }
     }
 }
 
