@@ -23,8 +23,8 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 
 ## Hardware Requirements
 
-- Seeed Studio XIAO ESP32C6
-- VL53L1X Time-of-Flight (ToF) Distance Sensor
+- [Seeed Studio XIAO ESP32C6] (https://www.aliexpress.com/item/1005006946131911.html?spm=a2g0o.order_list.order_list_main.16.5aa71802xvDHiz)
+- [VL53L1X Time-of-Flight (ToF) Distance Sensor] (https://www.aliexpress.com/item/1005006760524608.html?spm=a2g0o.order_list.order_list_main.23.5aa71802xvDHiz)
 - Container for the dough
 - 3D-printed lid for your container
 
