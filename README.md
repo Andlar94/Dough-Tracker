@@ -12,7 +12,7 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 ## Features
 
 - __Automatic Monitoring__: Measurements taken every 15 minutes
-- __Web Interface__: Modern, responsive dashboard accessible via WiFi
+- __Web Interface__: Simple web interface available at http://dough.local
 - __Real-time Visualization__: Chart.js graphs showing rise percentage over time
 - __Smart Calibration__: Persistent container calibration that survives power-offs
 - __Outlier Filtering__: Median-based filtering removes sensor anomalies (12% deviation threshold)
