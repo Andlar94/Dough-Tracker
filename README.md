@@ -37,8 +37,11 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 5. Add your starter and calibrate fresh dough
 6. Monitor rise progress!
 * Important note on calibrating empty container: The reflective index of your container will affect the measurement taken by the sensor. My see-through container gets about a 10mm difference when measuring without a dough. 
-  I recommend coating the bottom of the container in a thin layer of dough before calibrating. This way, you calibrate against a surface with the same reflective index.
-  
+  I recommend coating the bottom of the container in a thin layer of dough before calibrating. This way, you calibrate against a surface with the same reflective index. See image below
+
+<img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/30e3c93c-576b-41fd-8061-06016bde433b" />
+
+
 <img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/b637c37f-160a-4263-a73c-5a87f77ad0ba" />
 
 ## Wiring diagram
