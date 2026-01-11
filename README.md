@@ -32,3 +32,7 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 4. Calibrate empty container
 5. Add your starter and calibrate fresh dough
 6. Monitor rise progress!
+
+
+###DISCLAIMER###
+This program has been coded, in full, using Claude in Cline. I have no experience in coding, but wanted a program to monitor the progress of the fermentation of my dough
