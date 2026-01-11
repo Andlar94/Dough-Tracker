@@ -45,10 +45,10 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 The wiring of the device should look like this, and I am sorry, all I had was paint:
 
 In the order of ESP to VL53L1X sensor:
-3V3->VIN
-GND->GND
-SDA(D4,22)->SDA
-SCL(D5,23)->SCL
+- 3V3->VIN
+- GND->GND
+- SDA(D4,22)->SDA
+- SCL(D5,23)->SCL
 
 <img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/b11284e5-dbb7-47ca-ae82-e1fd766c3697" />
 
