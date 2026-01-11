@@ -31,8 +31,8 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 ## Quick Start
 
 1. Upload the code to your XIAO ESP32C6
-2. Connect to "DoughTracker" WiFi network (password: 12345678)
-3. Configure your home WiFi through the web interface, available at the device IP: 192.168.4.1
+2. Connect to "DoughTracker" WiFi network (password: 12345678) using your phone. Click connect anyway if you are prompted that the network may not provide internet connection. 
+3. Open a web browser and type 192.168.4.1 - You'll be taken to the device page. Scroll down untill you find WiFi configuration. Scan for networks and connect to your home network. You'll lose connection to the device, but can now access it at http://dough.local, or the new device IP. 
 4. Calibrate empty container*
 5. Add your starter and calibrate fresh dough
 6. Monitor rise progress!
