@@ -50,9 +50,12 @@ GND->GND
 SDA(D4,22)->SDA
 SCL(D5,23)->SCL
 
+<img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/b11284e5-dbb7-47ca-ae82-e1fd766c3697" />
 
-![wiring](https://github.com/user-attachments/assets/b11284e5-dbb7-47ca-ae82-e1fd766c3697)
+I would recommend wiring the ESP first, then placing it in the 3D-printed enclosure and cut the wires to an appropriate length before soldering to the VL53L1X sensor.
+After soldering, fit the lens cap over the sensor and press the components into place. It should then look like this, with the lens pointing down into the container: 
 
+<img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/3acffe53-0eb2-4f71-a56c-fd0dbd8f24a0" />
 
 ###DISCLAIMER###
 This program has been coded, in full, using Claude in Cline. I have no experience in coding, but wanted a program to monitor the progress of the fermentation of my dough
