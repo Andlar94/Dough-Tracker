@@ -2,9 +2,12 @@
 
 An IoT sourdough starter monitoring system that tracks dough rise over time using a distance sensor. Built for the Seeed Studio XIAO ESP32C6 with VL53L1X Time-of-Flight sensor.
 
+
+
 ## Overview
 
 Dough Tracker automatically measures your sourdough starter's height every 15 minutes and visualizes the rise percentage through a web interface. Perfect for monitoring fermentation progress and understanding your starter's behavior.
+![20260111_084042](https://github.com/user-attachments/assets/75c7c197-57d4-4ed7-9337-59a0280b5ee8)
 
 ## Features
 
@@ -32,6 +35,7 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 4. Calibrate empty container
 5. Add your starter and calibrate fresh dough
 6. Monitor rise progress!
+<img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/b637c37f-160a-4263-a73c-5a87f77ad0ba" />
 
 
 ###DISCLAIMER###
