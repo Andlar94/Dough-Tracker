@@ -25,14 +25,14 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 
 - [Seeed Studio XIAO ESP32C6] (https://www.aliexpress.com/item/1005006946131911.html?spm=a2g0o.order_list.order_list_main.16.5aa71802xvDHiz)
 - [VL53L1X Time-of-Flight (ToF) Distance Sensor] (https://www.aliexpress.com/item/1005006760524608.html?spm=a2g0o.order_list.order_list_main.23.5aa71802xvDHiz)
-- Container for the dough
+- Straight walled container for the dough - The sensor measures rise by height. If the container is not straight walled, a doubling in size will not correspond to a 100% increase if the walls taper, as the program does not measure volume. 
 - 3D-printed lid for your container
 
 ## Quick Start
 
 1. Upload the code to your XIAO ESP32C6
 2. Connect to "DoughTracker" WiFi network (password: 12345678)
-3. Configure your home WiFi through the web interface
+3. Configure your home WiFi through the web interface, available at the device IP: 192.168.4.1
 4. Calibrate empty container*
 5. Add your starter and calibrate fresh dough
 6. Monitor rise progress!
@@ -40,6 +40,18 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
   I recommend coating the bottom of the container in a thin layer of dough before calibrating. This way, you calibrate against a surface with the same reflective index.
   
 <img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/b637c37f-160a-4263-a73c-5a87f77ad0ba" />
+
+## Wiring diagram
+The wiring of the device should look like this, and I am sorry, all I had was paint:
+
+In the order of ESP to VL53L1X sensor:
+3V3->VIN
+GND->GND
+SDA(D4,22)->SDA
+SCL(D5,23)->SCL
+
+
+![wiring](https://github.com/user-attachments/assets/b11284e5-dbb7-47ca-ae82-e1fd766c3697)
 
 
 ###DISCLAIMER###
