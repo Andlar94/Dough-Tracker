@@ -20,7 +20,7 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 - __WiFi Setup__: Easy network configuration through web interface
 - __mDNS Support__: Access via `http://dough.local`
 - __Data Persistence__: Measurements and calibration stored in non-volatile memory
-
+<img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/17fabe87-1e51-4470-b2c2-c2acc28dab66" />
 ## Hardware Requirements
 
 - [Seeed Studio XIAO ESP32C6] (https://www.aliexpress.com/item/1005006946131911.html?spm=a2g0o.order_list.order_list_main.16.5aa71802xvDHiz)
@@ -37,13 +37,15 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 5. Add your starter and calibrate fresh dough
 6. Monitor rise progress!
 * Important note on calibrating empty container: The reflective index of your container will affect the measurement taken by the sensor. My see-through container gets about a 10mm difference when measuring without a dough. 
-  I recommend coating the bottom of the container in a thin layer of dough before calibrating. This way, you calibrate against a surface with the same reflective index. See image below
+  I recommend coating the bottom of the container in a thin layer of dough before calibrating. This way, you calibrate against a surface with the same reflective index. I also recommend calibrating 3 times, and checking to see that all measurements are within a reasonable range, to rule out any false measurements. See image below
 
 <img width="740" height="740" alt="interface" src="https://github.com/user-attachments/assets/3d6fa7c9-2919-431e-892e-7b2090384ecc" />
 
 
 
-<img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/b637c37f-160a-4263-a73c-5a87f77ad0ba" />
+
+
+
 
 ## Wiring diagram
 The wiring of the device should look like this, and I am sorry, all I had was paint:
