@@ -6,6 +6,9 @@
 #include "WifiManager.h"
 #include "config.h"
 
+// Declare external function from doughtracker.ino
+extern void resetMeasurementTimer();
+
 MyWebServer::MyWebServer(SensorManager* sensor, CalibrationManager* calib, DataManager* data, WifiManager* wifi)
   : sensorManager(sensor), calibManager(calib), dataManager(data), wifiManager(wifi) {
   server = new WebServer(WEB_SERVER_PORT);
@@ -164,6 +167,10 @@ void MyWebServer::handleCalibrateDough() {
   uint16_t distance = sensorManager->getAveragedDistance(5);
   calibManager->setDoughHeight(distance);
   uint16_t initialThickness = calibManager->getInitialDoughThickness();
+  
+  // Reset the measurement timer now that dough is calibrated
+  // This ensures the first measurement happens 15 minutes from now
+  resetMeasurementTimer();
   
   String json = "{\"success\":true,\"doughHeight\":";
   json += distance;

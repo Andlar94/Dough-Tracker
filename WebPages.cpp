@@ -529,10 +529,24 @@ function initializeChart() {
 
 function updateStatus() {
     // Fetch data from /data endpoint
+    let measurements = null;
+    let statusData = null;
+    let dataFetched = false;
+    let statusFetched = false;
+    
+    function updateChartIfReady() {
+        if (dataFetched && statusFetched && measurements) {
+            updateChart(measurements);
+        }
+    }
+    
     fetch('/data')
         .then(response => response.json())
         .then(data => {
+            measurements = data.measurements;
+            dataFetched = true;
             updateUI(data);
+            updateChartIfReady();
         })
         .catch(error => {
             console.error('Error fetching data:', error);
@@ -542,8 +556,11 @@ function updateStatus() {
     fetch('/status')
         .then(response => response.json())
         .then(data => {
+            statusData = data;
+            statusFetched = true;
             updateWifiStatus(data);
             updateCalibrationStatus(data);
+            updateChartIfReady();
         })
         .catch(error => {
             console.error('Error fetching status:', error);
@@ -658,6 +675,9 @@ function updateCalibrationStatus(status) {
     
     // Calculate and update elapsed time from calibration time
     if (status.calibrationTime && status.calibrationTime > 0) {
+        // Set the global calibration time so chart can use it
+        calibrationTime = status.calibrationTime;
+        
         const calibrationTimeSeconds = status.calibrationTime;
         const now = Math.floor(Date.now() / 1000);
         const elapsedSeconds = now - calibrationTimeSeconds;

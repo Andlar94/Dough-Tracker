@@ -39,6 +39,7 @@ void loop();
 void performMeasurement();
 void handleWiFiSetup();
 void printStatus();
+void resetMeasurementTimer();
 
 void setup() {
   // Initialize serial
@@ -219,6 +220,11 @@ void printStatus() {
  * 
  * This can be used to test functionality without web interface
  */
+
+void resetMeasurementTimer() {
+  lastMeasurementTime = millis();
+  Serial.println("[TIMER] Measurement timer reset - first measurement in 15 minutes");
+}
 
 void serialEvent() {
   while (Serial.available()) {
