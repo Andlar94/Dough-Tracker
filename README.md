@@ -7,8 +7,8 @@ An IoT sourdough starter monitoring system that tracks dough rise over time usin
 ## Overview
 
 Dough Tracker automatically measures your sourdough starter's height every 15 minutes and visualizes the rise percentage through a web interface. Perfect for monitoring fermentation progress and understanding your starter's behavior.
-![20260111_084042](https://github.com/user-attachments/assets/75c7c197-57d4-4ed7-9337-59a0280b5ee8)
 
+<img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/75c7c197-57d4-4ed7-9337-59a0280b5ee8" />
 ## Features
 
 - __Automatic Monitoring__: Measurements taken every 15 minutes
@@ -25,16 +25,20 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 
 - Seeed Studio XIAO ESP32C6
 - VL53L1X Time-of-Flight (ToF) Distance Sensor
-- I2C connection (SDA: GPIO 22, SCL: GPIO 23)
+- Container for the dough
+- 3D-printed lid for your container
 
 ## Quick Start
 
 1. Upload the code to your XIAO ESP32C6
 2. Connect to "DoughTracker" WiFi network (password: 12345678)
 3. Configure your home WiFi through the web interface
-4. Calibrate empty container
+4. Calibrate empty container*
 5. Add your starter and calibrate fresh dough
 6. Monitor rise progress!
+* Important note on calibrating empty container: The reflective index of your container will affect the measurement taken by the sensor. My see-through container gets about a 10mm difference when measuring without a dough. 
+  I recommend coating the bottom of the container in a thin layer of dough before calibrating. This way, you calibrate against a surface with the same reflective index.
+  
 <img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/b637c37f-160a-4263-a73c-5a87f77ad0ba" />
 
 
