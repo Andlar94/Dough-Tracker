@@ -1,4 +1,5 @@
 #include "DataManager.h"
+#include "CalibrationManager.h"
 #include "config.h"
 #include <time.h>
 
@@ -11,6 +12,11 @@ void DataManager::begin() {
   writeIndex = 0;
   firstMeasurementTime = 0;
   Serial.println("[DataManager] Data manager ready");
+}
+
+void DataManager::setCalibrationManager(CalibrationManager* calibMgr) {
+  calibrationMgr = calibMgr;
+  Serial.println("[DataManager] Calibration manager set");
 }
 
 void DataManager::addMeasurement(uint16_t thickness, float risePercentage) {
@@ -99,8 +105,18 @@ float DataManager::getCurrentRisePercentage() {
 unsigned long DataManager::getElapsedTime() {
   if (count == 0) return 0;
   
+  // If calibration manager is set, use calibration time as reference
+  // Otherwise, fall back to first measurement time
+  unsigned long baselineTime = firstMeasurementTime;
+  if (calibrationMgr != nullptr) {
+    unsigned long calibTime = calibrationMgr->getCalibrationTime();
+    if (calibTime != 0) {
+      baselineTime = calibTime;
+    }
+  }
+  
   unsigned long now = time(nullptr);
-  return now - firstMeasurementTime;
+  return now - baselineTime;
 }
 
 void DataManager::reset() {

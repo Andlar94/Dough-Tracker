@@ -119,6 +119,8 @@ void MyWebServer::handleStatus() {
   json += dataManager->hasData() ? "true" : "false";
   json += ",\"dataPoints\":";
   json += dataManager->getCount();
+  json += ",\"initialThickness\":";
+  json += calibManager->getInitialDoughThickness();
   json += "}";
   
   server->send(200, "application/json", json);

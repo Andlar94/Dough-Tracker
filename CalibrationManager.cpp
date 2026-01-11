@@ -1,5 +1,6 @@
 #include "CalibrationManager.h"
 #include <Preferences.h>
+#include <time.h>
 
 static Preferences preferences;
 
@@ -47,8 +48,12 @@ void CalibrationManager::setDoughHeight(uint16_t distanceToDough) {
     adjustedDistance = 0;
   }
   
+  // Capture the calibration timestamp (when fresh dough is placed)
+  calibrationTime = time(nullptr);
+  
   Serial.printf("[CalibrationManager] Setting dough height: rawDistance=%d, offset=%d, adjustedHeight=%d mm\n", 
                 distanceToDough, offsetMm, adjustedDistance);
+  Serial.printf("[CalibrationManager] Calibration timestamp set: %ld\n", calibrationTime);
   
   doughHeight = adjustedDistance;
   saveToNVS();
@@ -66,6 +71,10 @@ uint16_t CalibrationManager::getInitialDoughThickness() {
   Serial.printf("[CalibrationManager] Initial dough thickness: zeroPoint=%d - doughHeight=%d = %d mm\n", 
                 zeroPoint, doughHeight, thickness);
   return thickness;
+}
+
+unsigned long CalibrationManager::getCalibrationTime() {
+  return calibrationTime;
 }
 
 void CalibrationManager::setOffset(int16_t offsetMm) {

@@ -46,7 +46,7 @@ void setup() {
   delay(1000);
   
   Serial.println("\n\n===========================================");
-  Serial.println("  SOURDOUGH RISE TRACKER v1.0");
+  Serial.println("  DOUGH TRACKER v0.1");
   Serial.println("===========================================");
   Serial.printf("[SETUP] XIAO ESP32C6 - VL53L1X Sensor\n");
   Serial.printf("[SETUP] I2C Pins: SDA=%d, SCL=%d\n", I2C_SDA, I2C_SCL);
@@ -68,6 +68,9 @@ void setup() {
   // Initialize data manager
   Serial.println("[SETUP] Initializing data manager...");
   dataMgr.begin();
+  
+  // Link data manager to calibration manager so it can use calibration time
+  dataMgr.setCalibrationManager(&calibMgr);
   
   // Initialize WiFi manager
   Serial.println("\n[SETUP] Initializing WiFi...");

@@ -25,6 +25,9 @@ public:
   // Get initial dough thickness (zeroPoint - doughHeight)
   uint16_t getInitialDoughThickness();
   
+  // Get calibration timestamp (when dough was calibrated)
+  unsigned long getCalibrationTime();
+  
   // Set offset (persistent adjustment)
   void setOffset(int16_t offsetMm);
   
@@ -52,6 +55,7 @@ private:
   uint16_t zeroPoint = 0;        // Distance to empty container
   uint16_t doughHeight = 0;      // Distance to top of fresh dough
   int16_t offsetMm = 0;          // User-set offset
+  unsigned long calibrationTime = 0;  // Unix timestamp when dough was calibrated
   bool calibrated = false;
   
   // NVS persistent storage helper methods

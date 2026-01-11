@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include "config.h"
 
+class CalibrationManager;  // Forward declaration
+
 struct DataPoint {
   unsigned long timestamp;    // Unix timestamp in seconds
   uint16_t thickness;         // Dough thickness in mm
@@ -16,6 +18,9 @@ public:
   
   // Initialize data manager
   void begin();
+  
+  // Set calibration manager pointer (for getting calibration time)
+  void setCalibrationManager(CalibrationManager* calibMgr);
   
   // Add a new measurement
   void addMeasurement(uint16_t thickness, float risePercentage);
@@ -56,6 +61,7 @@ private:
   uint16_t count = 0;
   uint16_t writeIndex = 0;  // Circular buffer index
   unsigned long firstMeasurementTime = 0;
+  CalibrationManager* calibrationMgr = nullptr;
   
   // Helper to format timestamp
   String formatTime24H(unsigned long timestamp);

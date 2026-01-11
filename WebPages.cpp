@@ -27,12 +27,16 @@ String WebPages::getIndexHTML() {
             <!-- Status Section -->
             <section class="status-section">
                 <div class="status-box">
-                    <h2 id="risePercentage">0%</h2>
-                    <p>Current Rise</p>
+                    <h2 id="initialThickness">0 mm</h2>
+                    <p>Initial Thickness</p>
                 </div>
                 <div class="status-box">
                     <h2 id="thickness">0 mm</h2>
-                    <p>Dough Thickness</p>
+                    <p>Current Thickness</p>
+                </div>
+                <div class="status-box">
+                    <h2 id="risePercentage">0%</h2>
+                    <p>Current Rise</p>
                 </div>
                 <div class="status-box">
                     <h2 id="elapsedTime">0:00</h2>
@@ -533,11 +537,12 @@ function updateStatus() {
             console.error('Error fetching data:', error);
         });
     
-    // Fetch WiFi status
+    // Fetch WiFi and calibration status
     fetch('/status')
         .then(response => response.json())
         .then(data => {
             updateWifiStatus(data);
+            updateCalibrationStatus(data);
         })
         .catch(error => {
             console.error('Error fetching status:', error);
@@ -647,6 +652,14 @@ function updateWifiStatus(status) {
             wifiContent.classList.add('expanded');
             wifiArrow.style.transform = 'rotate(180deg)';
         }
+    }
+}
+
+function updateCalibrationStatus(status) {
+    // Update initial thickness from calibration
+    const initialThicknessElement = document.getElementById('initialThickness');
+    if (initialThicknessElement) {
+        initialThicknessElement.textContent = status.initialThickness + ' mm';
     }
 }
 
