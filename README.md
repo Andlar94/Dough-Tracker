@@ -26,7 +26,7 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 - [Seeed Studio XIAO ESP32C6] (https://www.aliexpress.com/item/1005006946131911.html?spm=a2g0o.order_list.order_list_main.16.5aa71802xvDHiz)
 - [VL53L1X Time-of-Flight (ToF) Distance Sensor] *important: get the model with lid (https://www.aliexpress.com/item/1005006760524608.html?spm=a2g0o.order_list.order_list_main.23.5aa71802xvDHiz)
 - Straight walled container for the dough - The sensor measures rise by height. If the container is not straight walled, a doubling in size will not correspond to a 100% increase if the walls taper, as the program does not measure volume. 
-- 3D-printed lid for your container
+- [3D-printed lid for your container] (https://makerworld.com/en/models/2230938-dough-tracker-track-your-dough-fermentation#profileId-2427211)
 
 ## Quick Start
 
