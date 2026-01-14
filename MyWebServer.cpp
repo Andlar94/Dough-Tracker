@@ -4,13 +4,14 @@
 #include "CalibrationManager.h"
 #include "DataManager.h"
 #include "WifiManager.h"
+#include "WebhookManager.h"
 #include "config.h"
 
 // Declare external function from doughtracker.ino
 extern void resetMeasurementTimer();
 
-MyWebServer::MyWebServer(SensorManager* sensor, CalibrationManager* calib, DataManager* data, WifiManager* wifi)
-  : sensorManager(sensor), calibManager(calib), dataManager(data), wifiManager(wifi) {
+MyWebServer::MyWebServer(SensorManager* sensor, CalibrationManager* calib, DataManager* data, WifiManager* wifi, WebhookManager* webhook)
+  : sensorManager(sensor), calibManager(calib), dataManager(data), wifiManager(wifi), webhookManager(webhook) {
   server = new WebServer(WEB_SERVER_PORT);
 }
 
@@ -48,6 +49,9 @@ void MyWebServer::begin() {
   server->on("/api/reset-wifi", HTTP_POST, [this]() { this->handleResetWifi(); });
   server->on("/api/scan-networks", HTTP_GET, [this]() { this->handleScanNetworks(); });
   server->on("/api/connect-wifi", HTTP_POST, [this]() { this->handleConnectWiFi(); });
+  server->on("/api/webhook", HTTP_GET, [this]() { this->handleGetWebhook(); });
+  server->on("/api/webhook", HTTP_POST, [this]() { this->handleSetWebhook(); });
+  server->on("/api/test-webhook", HTTP_POST, [this]() { this->handleTestWebhook(); });
   server->onNotFound([this]() { this->handleNotFound(); });
   
   // Small delay to ensure network stack is ready
@@ -244,14 +248,17 @@ void MyWebServer::handleOffset() {
 
 void MyWebServer::handleResetData() {
   Serial.println("[WebServer] POST /api/reset-data");
-  
+
   // Reset measurement data
   dataManager->reset();
-  
+
   // Reset dough height only (preserves zero point calibration for the container)
   // This allows users to start a new bake without recalibrating the empty container
   calibManager->resetDoughHeight();
-  
+
+  // Reset webhook threshold flags for new fermentation cycle
+  webhookManager->resetThresholds();
+
   server->send(200, "application/json", "{\"success\":true}");
 }
 
@@ -335,4 +342,79 @@ String MyWebServer::jsonResponse(const char* key, const char* value) {
   json += value;
   json += "\"}";
   return json;
+}
+
+void MyWebServer::handleGetWebhook() {
+  Serial.println("[WebServer] GET /api/webhook");
+
+  String json = "{\"url\":\"";
+  json += webhookManager->getWebhookURL();
+  json += "\",\"enabled\":";
+  json += webhookManager->isEnabled() ? "true" : "false";
+  json += ",\"configured\":";
+  json += webhookManager->isConfigured() ? "true" : "false";
+  json += ",\"threshold50Reached\":";
+  json += webhookManager->isThreshold50Reached() ? "true" : "false";
+  json += ",\"threshold100Reached\":";
+  json += webhookManager->isThreshold100Reached() ? "true" : "false";
+  json += ",\"threshold200Reached\":";
+  json += webhookManager->isThreshold200Reached() ? "true" : "false";
+  json += "}";
+
+  server->send(200, "application/json", json);
+}
+
+void MyWebServer::handleSetWebhook() {
+  Serial.println("[WebServer] POST /api/webhook");
+
+  if (!server->hasArg("plain")) {
+    server->send(400, "application/json", "{\"error\":\"No data\"}");
+    return;
+  }
+
+  String body = server->arg("plain");
+
+  // Parse JSON - extract url and enabled
+  int urlPos = body.indexOf("\"url\":\"");
+  int enabledPos = body.indexOf("\"enabled\":");
+
+  if (urlPos != -1) {
+    int urlStart = urlPos + 7;
+    int urlEnd = body.indexOf("\"", urlStart);
+    String url = body.substring(urlStart, urlEnd);
+    webhookManager->setWebhookURL(url);
+  }
+
+  if (enabledPos != -1) {
+    bool enabled = body.substring(enabledPos + 10).indexOf("true") != -1;
+    webhookManager->setEnabled(enabled);
+  }
+
+  String json = "{\"success\":true,\"url\":\"";
+  json += webhookManager->getWebhookURL();
+  json += "\",\"enabled\":";
+  json += webhookManager->isEnabled() ? "true" : "false";
+  json += "}";
+
+  server->send(200, "application/json", json);
+}
+
+void MyWebServer::handleTestWebhook() {
+  Serial.println("[WebServer] POST /api/test-webhook");
+
+  if (!webhookManager->isConfigured()) {
+    server->send(400, "application/json",
+                 "{\"success\":false,\"error\":\"Webhook not configured\"}");
+    return;
+  }
+
+  // Send a test notification
+  bool success = webhookManager->sendTestNotification();
+
+  if (success) {
+    server->send(200, "application/json", "{\"success\":true}");
+  } else {
+    server->send(500, "application/json",
+                 "{\"success\":false,\"error\":\"Failed to send test notification\"}");
+  }
 }

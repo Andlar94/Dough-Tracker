@@ -132,6 +132,7 @@ bool CalibrationManager::isCalibrated() {
 void CalibrationManager::resetDoughHeight() {
   Serial.println("[CalibrationManager] Resetting dough height only (preserving zero point and offset)...");
   doughHeight = 0;
+  calibrationTime = 0;
   saveToNVS();
   Serial.println("[CalibrationManager] Dough height reset complete - zero point and offset preserved");
 }
@@ -139,34 +140,38 @@ void CalibrationManager::resetDoughHeight() {
 void CalibrationManager::reset() {
   Serial.println("[CalibrationManager] Resetting all calibration...");
   zeroPoint = 0;
+  doughHeight = 0;
   offsetMm = 0;
+  calibrationTime = 0;
   calibrated = false;
-  
+
   preferences.begin("dough", false);
   preferences.clear();
   preferences.end();
-  
+
   Serial.println("[CalibrationManager] Calibration reset complete");
 }
 
 void CalibrationManager::loadFromNVS() {
   preferences.begin("dough", true);  // Read-only
-  
+
   zeroPoint = preferences.getUShort("zeroPoint", 0);
   doughHeight = preferences.getUShort("doughHeight", 0);
   offsetMm = preferences.getShort("offsetMm", 0);
+  calibrationTime = preferences.getULong("calibTime", 0);
   calibrated = (zeroPoint > 0);
-  
+
   preferences.end();
 }
 
 void CalibrationManager::saveToNVS() {
   preferences.begin("dough", false);  // Read-write
-  
+
   preferences.putUShort("zeroPoint", zeroPoint);
   preferences.putUShort("doughHeight", doughHeight);
   preferences.putShort("offsetMm", offsetMm);
-  
+  preferences.putULong("calibTime", calibrationTime);
+
   preferences.end();
   Serial.println("[CalibrationManager] Calibration saved to NVS");
 }

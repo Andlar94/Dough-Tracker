@@ -8,10 +8,11 @@ class SensorManager;
 class CalibrationManager;
 class DataManager;
 class WifiManager;
+class WebhookManager;
 
 class MyWebServer {
 public:
-  MyWebServer(SensorManager* sensor, CalibrationManager* calib, DataManager* data, WifiManager* wifi);
+  MyWebServer(SensorManager* sensor, CalibrationManager* calib, DataManager* data, WifiManager* wifi, WebhookManager* webhook);
   ~MyWebServer();
   
   // Initialize web server
@@ -29,6 +30,7 @@ private:
   CalibrationManager* calibManager;
   DataManager* dataManager;
   WifiManager* wifiManager;
+  WebhookManager* webhookManager;
   
   // Request handlers
   void handleRoot();
@@ -42,6 +44,9 @@ private:
   void handleResetWifi();
   void handleScanNetworks();
   void handleConnectWiFi();
+  void handleGetWebhook();
+  void handleSetWebhook();
+  void handleTestWebhook();
   void handleNotFound();
   
   // Helper methods

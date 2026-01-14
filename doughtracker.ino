@@ -18,6 +18,7 @@
 #include "DataManager.h"
 #include "WifiManager.h"
 #include "MyWebServer.h"
+#include "WebhookManager.h"
 #include <time.h>
 
 // Global instances
@@ -25,7 +26,8 @@ SensorManager sensorMgr;
 CalibrationManager calibMgr;
 DataManager dataMgr;
 WifiManager wifiMgr;
-MyWebServer webServer(&sensorMgr, &calibMgr, &dataMgr, &wifiMgr);
+WebhookManager webhookMgr;
+MyWebServer webServer(&sensorMgr, &calibMgr, &dataMgr, &wifiMgr, &webhookMgr);
 
 // Timing variables
 unsigned long lastMeasurementTime = 0;
@@ -69,9 +71,13 @@ void setup() {
   // Initialize data manager
   Serial.println("[SETUP] Initializing data manager...");
   dataMgr.begin();
-  
+
   // Link data manager to calibration manager so it can use calibration time
   dataMgr.setCalibrationManager(&calibMgr);
+
+  // Initialize webhook manager
+  Serial.println("[SETUP] Initializing webhook manager...");
+  webhookMgr.begin();
   
   // Initialize WiFi manager
   Serial.println("\n[SETUP] Initializing WiFi...");
@@ -160,10 +166,13 @@ void performMeasurement() {
   
   // Calculate rise percentage
   float risePercentage = calibMgr.calculateRisePercentage(thickness, initialThickness);
-  
+
   // Add to data manager
   dataMgr.addMeasurement(thickness, risePercentage);
-  
+
+  // Check webhook thresholds and notify if needed
+  webhookMgr.checkAndNotify(risePercentage);
+
   // Print summary
   Serial.printf("[MEASURE] Distance: %d mm\n", distance);
   Serial.printf("[MEASURE] Thickness: %d mm\n", thickness);

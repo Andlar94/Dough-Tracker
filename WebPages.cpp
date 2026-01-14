@@ -120,6 +120,57 @@ String WebPages::getIndexHTML() {
                 </div>
                 </div>
             </section>
+
+            <!-- Discord Webhook Configuration Section -->
+            <section class="webhook-config-section">
+                <div class="collapsible-header" onclick="toggleSection('webhookContent')">
+                    <h2>🔔 Discord Notifications</h2>
+                    <span class="toggle-arrow" id="webhookArrow">▼</span>
+                </div>
+                <div id="webhookContent" class="collapsible-content">
+                    <div class="webhook-info" style="margin-bottom: 15px; padding: 15px; background: #E3F2FD; border-radius: 8px; font-size: 14px;">
+                        <p style="margin-bottom: 8px;"><strong>Get notified when your dough reaches:</strong></p>
+                        <ul style="margin-left: 20px; line-height: 1.6;">
+                            <li>50% rise - "Your dough has risen 50%, it's getting there!"</li>
+                            <li>100% rise - "Your dough has risen 100%, it's doubled!"</li>
+                            <li>200% rise - "Wow, you dough has tripled!"</li>
+                        </ul>
+                    </div>
+
+                    <div class="webhook-status" style="margin-bottom: 15px; padding: 10px; background: #f5f5f5; border-radius: 6px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Status:</span>
+                            <span id="webhookStatus" style="font-weight: bold;">Not configured</span>
+                        </div>
+                        <div id="webhookThresholds" style="margin-top: 10px; font-size: 13px; display: none;">
+                            <div>✓ 50% <span id="threshold50Status"></span></div>
+                            <div>✓ 100% <span id="threshold100Status"></span></div>
+                            <div>✓ 200% <span id="threshold200Status"></span></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <label for="webhookURL">Discord Webhook URL:</label>
+                        <input type="text" id="webhookURL" placeholder="https://discord.com/api/webhooks/..."
+                               style="width: 100%; padding: 8px; margin-top: 8px; font-family: monospace; font-size: 12px;">
+                        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                            Get your webhook URL from Discord: Server Settings → Integrations → Webhooks
+                        </p>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="webhookEnabled" checked>
+                            <span>Enable notifications</span>
+                        </label>
+                    </div>
+
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button onclick="saveWebhook()" class="btn btn-primary">💾 Save Webhook</button>
+                        <button onclick="testWebhook()" class="btn btn-secondary" id="testWebhookBtn">🧪 Test</button>
+                    </div>
+                </div>
+            </section>
         </main>
 
         <footer>
@@ -622,11 +673,111 @@ function toggleSection(contentId) {
     }
 }
 
+// Webhook configuration functions
+function saveWebhook() {
+    const url = document.getElementById('webhookURL').value.trim();
+    const enabled = document.getElementById('webhookEnabled').checked;
+
+    if (url && !url.startsWith('https://discord.com/api/webhooks/') &&
+        !url.startsWith('https://discordapp.com/api/webhooks/')) {
+        showToast('Invalid Discord webhook URL', 'error');
+        return;
+    }
+
+    const data = {
+        url: url,
+        enabled: enabled
+    };
+
+    fetch('/api/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Webhook settings saved!', 'success');
+            updateWebhookStatus();
+        } else {
+            showToast('Failed to save webhook', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving webhook:', error);
+        showToast('Error saving webhook', 'error');
+    });
+}
+
+function testWebhook() {
+    const btn = document.getElementById('testWebhookBtn');
+    setButtonLoading(btn, true);
+
+    fetch('/api/test-webhook', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            setButtonLoading(btn, false);
+            if (data.success) {
+                showToast('Test notification sent! Check Discord.', 'success');
+            } else {
+                showToast(data.error || 'Test failed', 'error');
+            }
+        })
+        .catch(error => {
+            setButtonLoading(btn, false);
+            console.error('Error testing webhook:', error);
+            showToast('Error sending test', 'error');
+        });
+}
+
+function updateWebhookStatus() {
+    fetch('/api/webhook')
+        .then(response => response.json())
+        .then(data => {
+            const statusEl = document.getElementById('webhookStatus');
+            const urlInput = document.getElementById('webhookURL');
+            const enabledCheckbox = document.getElementById('webhookEnabled');
+            const thresholdsDiv = document.getElementById('webhookThresholds');
+
+            urlInput.value = data.url || '';
+            enabledCheckbox.checked = data.enabled;
+
+            if (data.configured && data.enabled) {
+                statusEl.textContent = 'Active ✓';
+                statusEl.style.color = '#51cf66';
+
+                // Show threshold status
+                thresholdsDiv.style.display = 'block';
+                document.getElementById('threshold50Status').textContent =
+                    data.threshold50Reached ? '(sent)' : '(pending)';
+                document.getElementById('threshold100Status').textContent =
+                    data.threshold100Reached ? '(sent)' : '(pending)';
+                document.getElementById('threshold200Status').textContent =
+                    data.threshold200Reached ? '(sent)' : '(pending)';
+            } else if (data.configured && !data.enabled) {
+                statusEl.textContent = 'Configured (disabled)';
+                statusEl.style.color = '#ff8c00';
+                thresholdsDiv.style.display = 'none';
+            } else {
+                statusEl.textContent = 'Not configured';
+                statusEl.style.color = '#999';
+                thresholdsDiv.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching webhook status:', error);
+        });
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeChart();
     updateStatus();
-    autoRefreshInterval = setInterval(updateStatus, 30000); // Update every 30 seconds
+    updateWebhookStatus();
+    autoRefreshInterval = setInterval(function() {
+        updateStatus();
+        updateWebhookStatus();
+    }, 30000); // Update every 30 seconds
 });
 
 function initializeChart() {
