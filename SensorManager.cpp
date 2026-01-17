@@ -61,9 +61,16 @@ uint16_t SensorManager::getAveragedDistance(uint8_t samples) {
     Serial.println("[SensorManager] WARNING: Sensor not initialized");
     return 0;
   }
-  
+
+  // Clamp samples to maximum supported to prevent buffer overflow
+  const uint8_t MAX_SAMPLES = 10;
+  if (samples > MAX_SAMPLES) {
+    Serial.printf("[SensorManager] WARNING: samples clamped from %d to %d\n", samples, MAX_SAMPLES);
+    samples = MAX_SAMPLES;
+  }
+
   Serial.printf("[SensorManager] Taking %d measurements...\n", samples);
-  uint16_t measurements[10];  // Support up to 10 samples
+  uint16_t measurements[MAX_SAMPLES];
   uint8_t validSamples = 0;
   
   // Collect valid measurements

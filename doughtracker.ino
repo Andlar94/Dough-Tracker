@@ -33,7 +33,6 @@ MyWebServer webServer(&sensorMgr, &calibMgr, &dataMgr, &wifiMgr, &webhookMgr);
 unsigned long lastMeasurementTime = 0;
 unsigned long measurementInterval = MEASUREMENT_INTERVAL;
 bool calibrated = false;
-uint16_t initialThickness = 0;
 
 // Function prototypes
 void setup();
@@ -87,15 +86,22 @@ void setup() {
     Serial.printf("[SETUP] WiFi connected: %s\n", wifiMgr.getSSID().c_str());
     Serial.printf("[SETUP] IP address: %s\n", wifiMgr.getLocalIP().c_str());
     
-    // Synchronize time with NTP server
+    // Synchronize time with NTP server (with timeout)
     Serial.println("[SETUP] Synchronizing time with NTP server...");
     configTime(1 * 3600, 0, "pool.ntp.org", "time.nist.gov");
     time_t now = time(nullptr);
-    while (now < 24 * 3600) {
+    int ntpAttempts = 0;
+    const int NTP_TIMEOUT_ATTEMPTS = 100;  // 10 seconds max
+    while (now < 24 * 3600 && ntpAttempts < NTP_TIMEOUT_ATTEMPTS) {
       delay(100);
       now = time(nullptr);
+      ntpAttempts++;
     }
-    Serial.printf("[SETUP] Time synchronized: %s\n", ctime(&now));
+    if (now < 24 * 3600) {
+      Serial.println("[SETUP] WARNING: NTP sync timed out - timestamps may be incorrect");
+    } else {
+      Serial.printf("[SETUP] Time synchronized: %s\n", ctime(&now));
+    }
     
     // Setup mDNS
     if (wifiMgr.setupMDNS(MDNS_HOSTNAME)) {
@@ -139,32 +145,34 @@ void loop() {
 void performMeasurement() {
   Serial.println("\n=== MEASUREMENT CYCLE ===");
   Serial.printf("[MEASURE] Time: %lu ms\n", millis());
-  
-  // Check if we need to calibrate
+
+  // Check if container is calibrated (zero point set)
   if (!calibMgr.isCalibrated()) {
-    Serial.println("[MEASURE] WARNING: Device not calibrated!");
+    Serial.println("[MEASURE] WARNING: Container not calibrated!");
     Serial.println("[MEASURE] Please access web interface and click 'Calibrate Zero'");
     return;
   }
-  
+
+  // Get initial thickness from calibration data (zeroPoint - doughHeight)
+  uint16_t initialThickness = calibMgr.getInitialDoughThickness();
+  if (initialThickness == 0) {
+    Serial.println("[MEASURE] WARNING: Dough not calibrated!");
+    Serial.println("[MEASURE] Please access web interface and click 'Calibrate Dough'");
+    return;
+  }
+
   // Take sensor measurement
   uint16_t distance = sensorMgr.getAveragedDistance(SAMPLES_PER_MEASUREMENT);
-  
+
   if (distance == 0) {
     Serial.println("[MEASURE] ERROR: Failed to get distance from sensor!");
     return;
   }
-  
+
   // Calculate dough thickness
   uint16_t thickness = calibMgr.calculateDoughThickness(distance);
-  
-  // Set initial thickness on first measurement
-  if (dataMgr.getCount() == 0) {
-    initialThickness = thickness;
-    Serial.printf("[MEASURE] Initial thickness set: %d mm\n", initialThickness);
-  }
-  
-  // Calculate rise percentage
+
+  // Calculate rise percentage using calibrated initial thickness
   float risePercentage = calibMgr.calculateRisePercentage(thickness, initialThickness);
 
   // Add to data manager
@@ -176,9 +184,10 @@ void performMeasurement() {
   // Print summary
   Serial.printf("[MEASURE] Distance: %d mm\n", distance);
   Serial.printf("[MEASURE] Thickness: %d mm\n", thickness);
+  Serial.printf("[MEASURE] Initial: %d mm (from calibration)\n", initialThickness);
   Serial.printf("[MEASURE] Rise: %.1f%%\n", risePercentage);
   Serial.printf("[MEASURE] Total measurements: %d\n", dataMgr.getCount());
-  
+
   printStatus();
 }
 

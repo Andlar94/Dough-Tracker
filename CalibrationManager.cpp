@@ -153,6 +153,7 @@ void CalibrationManager::reset() {
 }
 
 void CalibrationManager::loadFromNVS() {
+  Serial.println("[CalibrationManager] Loading calibration from NVS...");
   preferences.begin("dough", true);  // Read-only
 
   zeroPoint = preferences.getUShort("zeroPoint", 0);
@@ -162,9 +163,14 @@ void CalibrationManager::loadFromNVS() {
   calibrated = (zeroPoint > 0);
 
   preferences.end();
+
+  Serial.printf("[CalibrationManager] Loaded from NVS: zeroPoint=%d, doughHeight=%d, offset=%d, calibTime=%lu\n",
+                zeroPoint, doughHeight, offsetMm, calibrationTime);
 }
 
 void CalibrationManager::saveToNVS() {
+  Serial.printf("[CalibrationManager] Saving to NVS: zeroPoint=%d, doughHeight=%d, offset=%d, calibTime=%lu\n",
+                zeroPoint, doughHeight, offsetMm, calibrationTime);
   preferences.begin("dough", false);  // Read-write
 
   preferences.putUShort("zeroPoint", zeroPoint);
@@ -173,5 +179,5 @@ void CalibrationManager::saveToNVS() {
   preferences.putULong("calibTime", calibrationTime);
 
   preferences.end();
-  Serial.println("[CalibrationManager] Calibration saved to NVS");
+  Serial.println("[CalibrationManager] Calibration saved to NVS successfully");
 }

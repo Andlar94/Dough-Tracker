@@ -54,13 +54,16 @@ DataPoint DataManager::getMeasurement(uint16_t index) {
     return empty;
   }
   
-  // Calculate actual buffer index (circular)
-  uint16_t bufferIndex = (writeIndex - count + index) % MAX_POINTS;
+  // Calculate actual buffer index (circular) - add MAX_POINTS to prevent underflow
+  uint16_t bufferIndex = (writeIndex - count + index + MAX_POINTS) % MAX_POINTS;
   return buffer[bufferIndex];
 }
 
 String DataManager::getAllMeasurementsJSON() {
-  String json = "[";
+  // Pre-allocate: estimate ~60 bytes per measurement to reduce reallocations
+  String json;
+  json.reserve(count * 60 + 10);
+  json = "[";
   
   for (uint16_t i = 0; i < count; i++) {
     DataPoint dp = getMeasurement(i);
