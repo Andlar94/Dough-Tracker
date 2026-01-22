@@ -20,9 +20,11 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 - __WiFi Setup__: Easy network configuration through web interface
 - __mDNS Support__: Access via `http://dough.local`
 - __Data Persistence__: Measurements and calibration stored in non-volatile memory
-- __Saved Containers: Save different sized containers to memory and load - no need to calibrate each time
-- __Discord webhook support for notifications
-<img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/17fabe87-1e51-4470-b2c2-c2acc28dab66" />
+- Saved Containers: Save different sized containers to memory and load - no need to calibrate each time
+- Discord webhook support for notifications
+<img width="439" height="604" alt="dough" src="https://github.com/user-attachments/assets/b2f56090-7cfa-425d-b586-8b63565f51b9" />
+*Placeholder image after web interface changes*
+
 
 ## Hardware Requirements
 
