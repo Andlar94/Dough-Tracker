@@ -20,6 +20,7 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 - __WiFi Setup__: Easy network configuration through web interface
 - __mDNS Support__: Access via `http://dough.local`
 - __Data Persistence__: Measurements and calibration stored in non-volatile memory
+- __Saved Containers: Save different sized containers to memory and load - no need to calibrate each time
 <img width="740" height="853" alt="interface" src="https://github.com/user-attachments/assets/17fabe87-1e51-4470-b2c2-c2acc28dab66" />
 
 ## Hardware Requirements
@@ -34,11 +35,11 @@ Dough Tracker automatically measures your sourdough starter's height every 15 mi
 1. Upload the code to your XIAO ESP32C6
 2. Connect to "DoughTracker" WiFi network (password: 12345678) using your phone. Click connect anyway if you are prompted that the network may not provide internet connection. 
 3. Open a web browser and type 192.168.4.1 - You'll be taken to the device page. Scroll down untill you find WiFi configuration. Scan for networks and connect to your home network. You'll lose connection to the device, but can now access it at http://dough.local, or the new device IP. 
-4. Calibrate empty container*
+4. Calibrate empty container* - You can then set a preset name and save that container for future use - next time just select it from the list and hit load, then calibrate your fresh dough in.
 5. Add your starter and calibrate fresh dough
 6. Monitor rise progress!
 * Important note on calibrating empty container: The reflective index of your container will affect the measurement taken by the sensor. My see-through container gets about a 10mm difference when measuring without a dough. 
-  I recommend coating the bottom of the container in a thin layer of dough before calibrating. This way, you calibrate against a surface with the same reflective index. I also recommend calibrating 3 times, and checking to see that all measurements are within a reasonable range, to rule out any false measurements. See image below
+  I recommend coating the bottom of the container in a thin layer of dough before calibrating, or even better, mix some water and dough till it reaches pancake batter consistency and pour some in the container, coating a super thin layer at the bottom. This way, you calibrate against a surface with the same reflective index. I also recommend calibrating 3 times, and checking to see that all measurements are within a reasonable range, to rule out any false measurements. See image below
 
 <img width="740" height="740" alt="interface" src="https://github.com/user-attachments/assets/3d6fa7c9-2919-431e-892e-7b2090384ecc" />
 
