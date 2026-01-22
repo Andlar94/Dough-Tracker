@@ -62,6 +62,20 @@ String WebPages::getIndexHTML() {
                     <button onclick="calibrateZero()" class="btn btn-primary">📏 Calibrate empty container</button>
                     <button onclick="calibrateDough()" class="btn btn-primary">🍞 Calibrate fresh starter</button>
                 </div>
+                <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #E6D5C3;">
+                    <h3 style="margin-bottom: 10px; font-size: 16px;">📦 Container Presets</h3>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <select id="presetSelect" style="flex: 1; min-width: 150px; padding: 8px;">
+                            <option value="">-- Select --</option>
+                        </select>
+                        <button onclick="loadPreset()" class="btn btn-success">Load</button>
+                        <button onclick="delPreset()" class="btn btn-danger">Del</button>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 10px; align-items: center;">
+                        <input type="text" id="presetName" placeholder="Preset name" maxlength="11" style="flex: 1; padding: 8px;">
+                        <button onclick="savePreset()" class="btn btn-primary">Save Current</button>
+                    </div>
+                </div>
             </section>
 
             <!-- Data Table -->
@@ -769,11 +783,95 @@ function updateWebhookStatus() {
         });
 }
 
+// Container preset functions
+function loadPresets() {
+    fetch('/api/presets')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('presetSelect');
+            select.innerHTML = '<option value="">-- Select --</option>';
+            data.presets.forEach((p, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = p.n + ' (' + p.z + 'mm)';
+                select.appendChild(opt);
+            });
+        })
+        .catch(error => console.error('Error loading presets:', error));
+}
+
+function loadPreset() {
+    const idx = document.getElementById('presetSelect').value;
+    if (idx === '') { showToast('Select a preset first', 'warning'); return; }
+
+    fetch('/api/presets', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ i: parseInt(idx), a: 'l' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ok) {
+            showToast('Preset loaded!', 'success');
+            updateStatus();
+        } else {
+            showToast(data.e || 'Load failed', 'error');
+        }
+    })
+    .catch(error => showToast('Error: ' + error, 'error'));
+}
+
+function delPreset() {
+    const idx = document.getElementById('presetSelect').value;
+    if (idx === '') { showToast('Select a preset first', 'warning'); return; }
+
+    showConfirmDialog('Delete Preset', 'Delete this preset?', function() {
+        fetch('/api/presets', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ i: parseInt(idx), a: 'd' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.ok) {
+                showToast('Preset deleted', 'success');
+                loadPresets();
+            } else {
+                showToast(data.e || 'Delete failed', 'error');
+            }
+        })
+        .catch(error => showToast('Error: ' + error, 'error'));
+    });
+}
+
+function savePreset() {
+    const name = document.getElementById('presetName').value.trim();
+    if (!name) { showToast('Enter a name', 'warning'); return; }
+
+    fetch('/api/presets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ n: name })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ok) {
+            showToast('Preset saved!', 'success');
+            document.getElementById('presetName').value = '';
+            loadPresets();
+        } else {
+            showToast(data.e || 'Save failed', 'error');
+        }
+    })
+    .catch(error => showToast('Error: ' + error, 'error'));
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeChart();
     updateStatus();
     updateWebhookStatus();
+    loadPresets();
     autoRefreshInterval = setInterval(function() {
         updateStatus();
         updateWebhookStatus();

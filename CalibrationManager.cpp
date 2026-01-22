@@ -10,12 +10,14 @@ CalibrationManager::CalibrationManager() {
 void CalibrationManager::begin() {
   Serial.println("[CalibrationManager] Initializing calibration manager...");
   loadFromNVS();
-  
+  loadPresetsFromNVS();
+
   if (isCalibrated()) {
     Serial.printf("[CalibrationManager] Calibration loaded: ZeroPoint=%d mm, Offset=%d mm\n", zeroPoint, offsetMm);
   } else {
     Serial.println("[CalibrationManager] No calibration found - needs calibration");
   }
+  Serial.printf("[CalibrationManager] Loaded %d container presets\n", presetCount);
 }
 
 void CalibrationManager::setZeroPoint(uint16_t distanceToEmpty) {
@@ -67,8 +69,15 @@ uint16_t CalibrationManager::getInitialDoughThickness() {
   if (zeroPoint == 0 || doughHeight == 0) {
     return 0;
   }
+  // Check for invalid condition: dough appears further than empty container
+  // This can happen due to sensor fluctuation if no dough is actually present
+  if (doughHeight >= zeroPoint) {
+    Serial.printf("[CalibrationManager] ERROR: Invalid calibration - doughHeight(%d) >= zeroPoint(%d)\n",
+                  doughHeight, zeroPoint);
+    return 0;
+  }
   uint16_t thickness = zeroPoint - doughHeight;
-  Serial.printf("[CalibrationManager] Initial dough thickness: zeroPoint=%d - doughHeight=%d = %d mm\n", 
+  Serial.printf("[CalibrationManager] Initial dough thickness: zeroPoint=%d - doughHeight=%d = %d mm\n",
                 zeroPoint, doughHeight, thickness);
   return thickness;
 }
@@ -180,4 +189,89 @@ void CalibrationManager::saveToNVS() {
 
   preferences.end();
   Serial.println("[CalibrationManager] Calibration saved to NVS successfully");
+}
+
+// Preset methods
+uint8_t CalibrationManager::getPresetCount() {
+  return presetCount;
+}
+
+bool CalibrationManager::getPreset(uint8_t idx, char* name, uint16_t* zp) {
+  if (idx >= presetCount) return false;
+  strncpy(name, presets[idx].name, 12);
+  *zp = presets[idx].zeroPoint;
+  return true;
+}
+
+bool CalibrationManager::savePreset(const char* name) {
+  if (presetCount >= MAX_PRESETS || !calibrated || zeroPoint == 0) return false;
+
+  strncpy(presets[presetCount].name, name, 11);
+  presets[presetCount].name[11] = '\0';
+  presets[presetCount].zeroPoint = zeroPoint;
+  presetCount++;
+
+  savePresetsToNVS();
+  Serial.printf("[CalibrationManager] Saved preset '%s' with zeroPoint=%d\n", name, zeroPoint);
+  return true;
+}
+
+bool CalibrationManager::loadPreset(uint8_t idx) {
+  if (idx >= presetCount) return false;
+
+  zeroPoint = presets[idx].zeroPoint;
+  calibrated = true;
+  doughHeight = 0;
+  calibrationTime = 0;
+
+  saveToNVS();
+  Serial.printf("[CalibrationManager] Loaded preset '%s', zeroPoint=%d\n", presets[idx].name, zeroPoint);
+  return true;
+}
+
+bool CalibrationManager::deletePreset(uint8_t idx) {
+  if (idx >= presetCount) return false;
+
+  // Shift remaining presets down
+  for (uint8_t i = idx; i < presetCount - 1; i++) {
+    presets[i] = presets[i + 1];
+  }
+  presetCount--;
+
+  savePresetsToNVS();
+  Serial.printf("[CalibrationManager] Deleted preset at index %d\n", idx);
+  return true;
+}
+
+void CalibrationManager::loadPresetsFromNVS() {
+  preferences.begin("dough", true);
+  presetCount = preferences.getUChar("pc", 0);
+  if (presetCount > MAX_PRESETS) presetCount = MAX_PRESETS;
+
+  char key[4];
+  for (uint8_t i = 0; i < presetCount; i++) {
+    snprintf(key, 4, "p%dn", i);
+    String name = preferences.getString(key, "");
+    strncpy(presets[i].name, name.c_str(), 11);
+    presets[i].name[11] = '\0';
+
+    snprintf(key, 4, "p%dz", i);
+    presets[i].zeroPoint = preferences.getUShort(key, 0);
+  }
+  preferences.end();
+}
+
+void CalibrationManager::savePresetsToNVS() {
+  preferences.begin("dough", false);
+  preferences.putUChar("pc", presetCount);
+
+  char key[4];
+  for (uint8_t i = 0; i < presetCount; i++) {
+    snprintf(key, 4, "p%dn", i);
+    preferences.putString(key, presets[i].name);
+
+    snprintf(key, 4, "p%dz", i);
+    preferences.putUShort(key, presets[i].zeroPoint);
+  }
+  preferences.end();
 }

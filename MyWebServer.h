@@ -47,6 +47,9 @@ private:
   void handleGetWebhook();
   void handleSetWebhook();
   void handleTestWebhook();
+  void handleGetPresets();
+  void handleSavePreset();
+  void handlePresetAction();
   void handleNotFound();
   
   // Helper methods

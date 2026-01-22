@@ -3,6 +3,13 @@
 
 #include <Arduino.h>
 
+struct ContainerPreset {
+    char name[12];      // 11 chars + null terminator
+    uint16_t zeroPoint; // Empty container distance
+};
+
+static const uint8_t MAX_PRESETS = 5;
+
 class CalibrationManager {
 public:
   CalibrationManager();
@@ -50,7 +57,14 @@ public:
   
   // Reset all calibration
   void reset();
-  
+
+  // Container preset methods
+  uint8_t getPresetCount();
+  bool getPreset(uint8_t idx, char* name, uint16_t* zp);
+  bool savePreset(const char* name);
+  bool loadPreset(uint8_t idx);
+  bool deletePreset(uint8_t idx);
+
 private:
   uint16_t zeroPoint = 0;        // Distance to empty container
   uint16_t doughHeight = 0;      // Distance to top of fresh dough
@@ -61,6 +75,12 @@ private:
   // NVS persistent storage helper methods
   void loadFromNVS();
   void saveToNVS();
+
+  // Preset storage
+  ContainerPreset presets[MAX_PRESETS];
+  uint8_t presetCount = 0;
+  void loadPresetsFromNVS();
+  void savePresetsToNVS();
 };
 
 #endif

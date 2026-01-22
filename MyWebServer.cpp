@@ -52,6 +52,9 @@ void MyWebServer::begin() {
   server->on("/api/webhook", HTTP_GET, [this]() { this->handleGetWebhook(); });
   server->on("/api/webhook", HTTP_POST, [this]() { this->handleSetWebhook(); });
   server->on("/api/test-webhook", HTTP_POST, [this]() { this->handleTestWebhook(); });
+  server->on("/api/presets", HTTP_GET, [this]() { this->handleGetPresets(); });
+  server->on("/api/presets", HTTP_POST, [this]() { this->handleSavePreset(); });
+  server->on("/api/presets", HTTP_DELETE, [this]() { this->handlePresetAction(); });
   server->onNotFound([this]() { this->handleNotFound(); });
   
   // Small delay to ensure network stack is ready
@@ -156,32 +159,42 @@ void MyWebServer::handleCalibrate() {
 
 void MyWebServer::handleCalibrateDough() {
   Serial.println("[WebServer] POST /api/calibrate-dough");
-  
+
   if (!sensorManager->isInitialized()) {
     server->send(500, "application/json", "{\"error\":\"Sensor not initialized\"}");
     return;
   }
-  
+
   if (!calibManager->isCalibrated()) {
     server->send(400, "application/json", "{\"error\":\"Container not calibrated first\"}");
     return;
   }
-  
+
   // Take measurement for dough height
   uint16_t distance = sensorManager->getAveragedDistance(5);
   calibManager->setDoughHeight(distance);
   uint16_t initialThickness = calibManager->getInitialDoughThickness();
-  
+
+  // Check for invalid calibration (dough distance >= empty container distance)
+  // This happens due to sensor fluctuation when no dough is present
+  if (initialThickness == 0) {
+    // Reset the invalid dough height so user can retry
+    calibManager->resetDoughHeight();
+    server->send(400, "application/json",
+      "{\"error\":\"Invalid reading: dough not detected. Please ensure dough is in the container and try again.\"}");
+    return;
+  }
+
   // Reset the measurement timer now that dough is calibrated
   // This ensures the first measurement happens 15 minutes from now
   resetMeasurementTimer();
-  
+
   String json = "{\"success\":true,\"doughHeight\":";
   json += distance;
   json += ",\"initialThickness\":";
   json += initialThickness;
   json += "}";
-  
+
   server->send(200, "application/json", json);
 }
 
@@ -416,5 +429,92 @@ void MyWebServer::handleTestWebhook() {
   } else {
     server->send(500, "application/json",
                  "{\"success\":false,\"error\":\"Failed to send test notification\"}");
+  }
+}
+
+void MyWebServer::handleGetPresets() {
+  Serial.println("[WebServer] GET /api/presets");
+
+  String json = "{\"presets\":[";
+  char name[12];
+  uint16_t zp;
+
+  for (uint8_t i = 0; i < calibManager->getPresetCount(); i++) {
+    if (i > 0) json += ",";
+    calibManager->getPreset(i, name, &zp);
+    json += "{\"n\":\"";
+    json += name;
+    json += "\",\"z\":";
+    json += zp;
+    json += "}";
+  }
+  json += "]}";
+
+  server->send(200, "application/json", json);
+}
+
+void MyWebServer::handleSavePreset() {
+  Serial.println("[WebServer] POST /api/presets");
+
+  if (!server->hasArg("plain")) {
+    server->send(400, "application/json", "{\"e\":\"No data\"}");
+    return;
+  }
+
+  String body = server->arg("plain");
+  int namePos = body.indexOf("\"n\":\"");
+  if (namePos == -1) {
+    server->send(400, "application/json", "{\"e\":\"Invalid JSON\"}");
+    return;
+  }
+
+  int nameStart = namePos + 5;
+  int nameEnd = body.indexOf("\"", nameStart);
+  String name = body.substring(nameStart, nameEnd);
+
+  if (calibManager->savePreset(name.c_str())) {
+    server->send(200, "application/json", "{\"ok\":1}");
+  } else {
+    server->send(400, "application/json", "{\"e\":\"Save failed\"}");
+  }
+}
+
+void MyWebServer::handlePresetAction() {
+  Serial.println("[WebServer] DELETE /api/presets");
+
+  if (!server->hasArg("plain")) {
+    server->send(400, "application/json", "{\"e\":\"No data\"}");
+    return;
+  }
+
+  String body = server->arg("plain");
+
+  // Parse index
+  int idxPos = body.indexOf("\"i\":");
+  if (idxPos == -1) {
+    server->send(400, "application/json", "{\"e\":\"No index\"}");
+    return;
+  }
+  uint8_t idx = body.substring(idxPos + 4).toInt();
+
+  // Parse action
+  int actPos = body.indexOf("\"a\":\"");
+  if (actPos == -1) {
+    server->send(400, "application/json", "{\"e\":\"No action\"}");
+    return;
+  }
+  char action = body.charAt(actPos + 5);
+
+  bool success = false;
+  if (action == 'l') {
+    success = calibManager->loadPreset(idx);
+  } else if (action == 'd') {
+    success = calibManager->deletePreset(idx);
+  }
+
+  if (success) {
+    server->send(200, "application/json", "{\"ok\":1}");
+  } else {
+    server->send(400, "application/json", "{\"e\":\"Action failed\"}");
   }
 }
